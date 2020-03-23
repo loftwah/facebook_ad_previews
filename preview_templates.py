@@ -40,7 +40,6 @@ def replace_logo(new_logo_url, driver):
     element = driver.find_element_by_class_name('_s0')
     new_element = "arguments[0].src = '" + new_logo_url + "'"
     driver.execute_script(new_element, element)
-img_path = 'local_image.jpg'
 
 def add_video_image(img_path):
     button_path =  '/Users/Nick/Documents/Python_Scripts/facebook_ad_previews/fb_play_button.png'
