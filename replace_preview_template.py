@@ -4,8 +4,8 @@
 import os
 import preview_templates as preview
 
-img_url = 'https://uploads-ssl.webflow.com/5cc447337c5efa0f49d294cd/5e1cf67d2024a83762dffc13_large_1578955165472609-p-800.jpeg'
+img_url = 'https://media.nu.nl/m/okrxd84a8uf8_std640.jpg'
 logo_url = 'https://cdn.worldvectorlogo.com/logos/opel-6.svg'
 
 #add screenshot
-preview.linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto', 150,'_5pcb', 'local_image.png')
+preview.linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto', 150,'_5pcb', 'local_image.png', video = True)
