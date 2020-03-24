@@ -103,8 +103,7 @@ def screenshot_element(element_id, out_name, driver):
     im.save(out_name)
 
 
-def linked_ad_template(copy, new_img, logo, page_name,engagement, screenshot_element_id = '' ,screenshot_out = '', video = False):
-    driver = webdriver.Chrome(executable_path = "/Users/Nick/Downloads/chromedriver")
+def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, screenshot_element_id = '' ,screenshot_out = '', video = False, sleep = 2):
     driver.get(preview_url)
     #page_name
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/h5/span/span/a', page_name, driver)
@@ -121,6 +120,6 @@ def linked_ad_template(copy, new_img, logo, page_name,engagement, screenshot_ele
     if screenshot_out == '':
         driver.close()
     else:
-        time.sleep(2)
+        time.sleep(sleep)
         screenshot_element(screenshot_element_id, screenshot_out, driver)
-        driver.close()
+        #driver.close()
