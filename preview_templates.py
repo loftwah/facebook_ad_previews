@@ -6,6 +6,7 @@ print('loading a new preview frame')
 
 import os
 import time
+import uuid
 import shutil
 import requests
 from PIL import Image
@@ -41,6 +42,7 @@ def replace_logo(new_logo_url, driver):
     new_element = "arguments[0].src = '" + new_logo_url + "'"
     driver.execute_script(new_element, element)
 
+
 def add_video_image(img_path):
     button_path =  '/Users/Nick/Documents/Python_Scripts/facebook_ad_previews/fb_play_button.png'
     button = Image.open(button_path).convert("RGBA")
@@ -53,11 +55,13 @@ def add_video_image(img_path):
     video_export_name = 'video_out.png'
     img.save(video_export_name)
     #upload this to google and return a url
-    blob = bucket.get_blob(video_export_name)
-    blob2 = bucket.blob(video_export_name)
+    blob_export_name = 'video_previews/' + str(uuid.uuid1()) + '.png'
+    blob = bucket.get_blob(blob_export_name)
+    blob2 = bucket.blob(blob_export_name)
     blob2.upload_from_filename(filename=video_export_name)
-    blob2 = bucket.blob(video_export_name)
-    return('https://storage.googleapis.com/ig_post_img/video_out.png')
+    blob2 = bucket.blob(blob_export_name)
+    return('https://storage.googleapis.com/ig_post_img/' + blob_export_name)
+
 
 def replace_main_img(img_url,driver, video = False):
     current_size = driver.find_element_by_class_name('uiScaledImageContainer')

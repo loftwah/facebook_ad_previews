@@ -4,7 +4,7 @@
 import os
 import preview_templates as preview
 
-img_url = 'https://media.nu.nl/m/okrxd84a8uf8_std640.jpg'
+img_url = 'https://media.nu.nl/m/8kyx5eaaukfh_wd640.jpg/kabinet-schrapt-centrale-eindexamens-schoolexamens-leidend.jpg'
 logo_url = 'https://cdn.worldvectorlogo.com/logos/opel-6.svg'
 
 #add screenshot
