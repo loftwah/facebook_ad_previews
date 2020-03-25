@@ -1,6 +1,7 @@
 #backlog use a headless browser
 #add score in a different color as option
 #add video option
+#get the previews from the sqm ad account
 
 print('loading a new preview frame')
 
@@ -20,6 +21,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 token = os.environ.get("USER_TOKEN")
 graph_api_version = 'v6.0'
 ad_preview_photo = '23844522939890593'
+link_ad_preview = '23844429402070018'
 params = {'access_token': token,
     'ad_format': "DESKTOP_FEED_STANDARD"}
 
@@ -27,6 +29,11 @@ r = requests.get('https://graph.facebook.com/' + graph_api_version + '/' + ad_pr
 iframe = r.json()['data'][0]['body']
 soup = BeautifulSoup(iframe, 'html.parser')
 preview_url = soup.find_all('iframe')[0]['src']
+
+r = requests.get('https://graph.facebook.com/' + graph_api_version + '/' + link_ad_preview + '/previews', params = params)
+iframe = r.json()['data'][0]['body']
+soup = BeautifulSoup(iframe, 'html.parser')
+link_ad_preview_url = soup.find_all('iframe')[0]['src']
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("GCS_DATA_STORE")
 client = storage.Client()
@@ -85,6 +92,15 @@ def replace_main_img(img_url,driver, video = False):
     new_element = "arguments[0].src = '" + img_url + "'"
     driver.execute_script(new_element, img_element)
 
+def replace_custom_element(class_name, driver, subelement, new_text):
+    full_element = driver.find_element_by_class_name(class_name)
+    attribute = full_element.get_attribute(subelement)
+    new_element = "arguments[0]." + subelement + " = '" + new_text + "'"
+    driver.execute_script(new_element, full_element)
+    img_element = driver.find_element_by_class_name('scaledImageFitWidth')
+    new_element = "arguments[0].src = '" + img_url + "'"
+    driver.execute_script(new_element, img_element)
+
 
 def screenshot_element(element_id, out_name, driver):
     element = driver.find_element_by_class_name(element_id)
@@ -113,6 +129,36 @@ def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, screen
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[1]', str(engagement) + ' Engagements', driver)
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[2]', '', driver)
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[3]', '', driver)
+    #add logo
+    replace_logo(logo,driver)
+    #replace img
+    replace_main_img(new_img,driver, video)
+    if screenshot_out == '':
+        driver.close()
+    else:
+        time.sleep(sleep)
+        screenshot_element(screenshot_element_id, screenshot_out, driver)
+        #driver.close()
+
+
+def full_linked_ad_template(copy, new_img, logo, page_name, cta, title, subtitle , driver, screenshot_element_id = '' , screenshot_out = '', video = False, sleep = 2):
+    driver.get(link_ad_preview_url)
+    #replace the CTA
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/div[1]/span/div[2]/div/div/div[3]/div/div/a', cta, driver)
+    #replace the tile
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/div[1]/span/div[2]/div/div/div[2]/div[2]/div[1]/a', title, driver)
+    #subtitle
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/div[1]/span/div[2]/div/div/div[2]/div[2]/div[2]', subtitle, driver)
+    #remove the url
+    element = driver.find_element_by_xpath("/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/div[1]/span/div[2]/div/div/div[2]/div[1]/div/div[1]")
+    driver.execute_script("arguments[0].remove()",element)
+    #remove_engagement
+    element = driver.find_element_by_class_name("_524d")
+    driver.execute_script("arguments[0].remove()",element)
+    #page_name
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/h5/span/span/a', page_name, driver)
+    #copy
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[2]', copy,driver)
     #add logo
     replace_logo(logo,driver)
     #replace img
