@@ -20,8 +20,9 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 token = os.environ.get("USER_TOKEN")
 graph_api_version = 'v6.0'
-ad_preview_photo = '23844522939890593'
+ad_preview_photo = '23842919686400018'
 link_ad_preview = '23844429402070018'
+carousel_preview = '23843867557790018'
 params = {'access_token': token,
     'ad_format': "DESKTOP_FEED_STANDARD"}
 
@@ -34,6 +35,11 @@ r = requests.get('https://graph.facebook.com/' + graph_api_version + '/' + link_
 iframe = r.json()['data'][0]['body']
 soup = BeautifulSoup(iframe, 'html.parser')
 link_ad_preview_url = soup.find_all('iframe')[0]['src']
+
+r = requests.get('https://graph.facebook.com/' + graph_api_version + '/' + carousel_preview + '/previews', params = params)
+iframe = r.json()['data'][0]['body']
+soup = BeautifulSoup(iframe, 'html.parser')
+carousel_preview = soup.find_all('iframe')[0]['src']
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("GCS_DATA_STORE")
 client = storage.Client()
@@ -92,6 +98,12 @@ def replace_main_img(img_url,driver, video = False):
     new_element = "arguments[0].src = '" + img_url + "'"
     driver.execute_script(new_element, img_element)
 
+
+def replace_carousel_img(img_url,driver, item ,video = False):
+    element = driver.find_elements_by_class_name('_kvn')
+    new_element = "arguments[0].src = '" + img_url + "'"
+    driver.execute_script(new_element, element[item])
+
 def replace_custom_element(class_name, driver, subelement, new_text):
     full_element = driver.find_element_by_class_name(class_name)
     attribute = full_element.get_attribute(subelement)
@@ -127,8 +139,9 @@ def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, screen
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[2]', copy,driver)
     #Engagement
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[1]', str(engagement) + ' Engagements', driver)
-    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[2]', '', driver)
-    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[3]', '', driver)
+    #this preview has no comments and shares, so the lines below are commented out
+    #replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[2]', '', driver)
+    #replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[3]', '', driver)
     #add logo
     replace_logo(logo,driver)
     #replace img
@@ -163,6 +176,33 @@ def full_linked_ad_template(copy, new_img, logo, page_name, cta, title, subtitle
     replace_logo(logo,driver)
     #replace img
     replace_main_img(new_img,driver, video)
+    if screenshot_out == '':
+        driver.close()
+    else:
+        time.sleep(sleep)
+        screenshot_element(screenshot_element_id, screenshot_out, driver)
+        #driver.close()
+
+
+def carousel_template(copy, new_img1, new_img2, logo, page_name, cta, title1, title2, subtitle1, subtitle2 , driver, screenshot_element_id = '' , screenshot_out = '', video = False, sleep = 2):
+    driver.get(carousel_preview)
+    #replace the CTA
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[1]/div/div/div/div/div[1]/a[2]', cta, driver)
+    #replace the titles
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[1]/div/div/div/div/div[2]/div[1]', title1, driver)
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[2]/div/div/div/div/div[2]/div[1]', title2, driver)
+    #subtitle
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[1]/div/div/div/div/div[2]/div[2]', subtitle1, driver)
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[2]/div/div/div/div/div[2]/div[2]', subtitle2, driver)
+    #page_name
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/h5/span/span/a', page_name, driver)
+    #copy
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[2]', copy,driver)
+    #add logo
+    replace_logo(logo,driver)
+    #replace img
+    replace_carousel_img(new_img1, driver, 0)
+    replace_carousel_img(new_img2, driver, 1)
     if screenshot_out == '':
         driver.close()
     else:
