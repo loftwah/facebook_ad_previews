@@ -3,6 +3,10 @@
 #add video option
 #get the previews from the sqm ad account
 
+#remove sponsored if the post is organic
+#fb_play button size based on the width of the image?
+#delay the screenshot
+
 print('loading a new preview frame')
 
 import os
@@ -10,6 +14,7 @@ import time
 import uuid
 import shutil
 import requests
+import datetime
 from PIL import Image
 from PIL import ImageFile
 from bs4 import BeautifulSoup
@@ -131,14 +136,14 @@ def screenshot_element(element_id, out_name, driver):
     im.save(out_name)
 
 
-def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, screenshot_element_id = '' ,screenshot_out = '', video = False, sleep = 2):
+def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, creation_time, screenshot_element_id = '' ,screenshot_out = '', video = False, sleep = 2, sponsored = False):
     driver.get(preview_url)
     #page_name
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/h5/span/span/a', page_name, driver)
     #copy
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[2]', copy,driver)
     #Engagement
-    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[1]', str(engagement) + ' Engagements', driver)
+    replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[1]', str(engagement) , driver)
     #this preview has no comments and shares, so the lines below are commented out
     #replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[2]', '', driver)
     #replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[2]/form/div[1]/div/div/div/div[1]/div/a/span[3]', '', driver)
@@ -146,13 +151,16 @@ def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, screen
     replace_logo(logo,driver)
     #replace img
     replace_main_img(new_img,driver, video)
+    #replace sponsored
+    if sponsored != True:
+        date_text = datetime.datetime.strptime(creation_time.split('+')[0], '%Y-%m-%dT%H:%M:%S').strftime('%d %b at %H:%M')
+        replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/div/a[1]', date_text, driver)
     if screenshot_out == '':
         driver.close()
     else:
         time.sleep(sleep)
         screenshot_element(screenshot_element_id, screenshot_out, driver)
         #driver.close()
-
 
 def full_linked_ad_template(copy, new_img, logo, page_name, cta, title, subtitle , driver, screenshot_element_id = '' , screenshot_out = '', video = False, sleep = 2):
     driver.get(link_ad_preview_url)
