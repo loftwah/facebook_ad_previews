@@ -7,6 +7,9 @@
 #fb_play button size based on the width of the image?
 #delay the screenshot
 
+#add a is none handler, if none then text is ''
+#make the fb preview button relative
+
 print('loading a new preview frame')
 
 import os
@@ -82,26 +85,31 @@ def add_video_image(img_path):
 
 
 def replace_main_img(img_url,driver, video = False):
-    current_size = driver.find_element_by_class_name('uiScaledImageContainer')
-    size = current_size.get_attribute('style')
-    width = int(size.split('width:')[1].split('px;')[0].strip())
-    height = int(size.split('height:')[1].split('px;')[0].strip())
-    ratio = width / height
-    #get the ratio of the new image
-    r = requests.get(img_url, stream = True)
-    local_file = open('local_image.jpg', 'wb')
-    r.raw.decode_content = True
-    shutil.copyfileobj(r.raw, local_file)
-    img = Image.open('local_image.jpg')
-    if video == True:
-        img_url = add_video_image('local_image.jpg')
-    new_height =  width * (img.height / img.width)
-    new_ratio = 'width: ' + str(width) + 'px;' + ' height: ' + str(int(round(new_height,0))) + 'px;'
-    new_element = "arguments[0].style = '" + new_ratio + "'"
-    driver.execute_script(new_element, current_size)
-    img_element = driver.find_element_by_class_name('scaledImageFitWidth')
-    new_element = "arguments[0].src = '" + img_url + "'"
-    driver.execute_script(new_element, img_element)
+    if img_url == '':
+        img_element = driver.find_element_by_class_name('scaledImageFitWidth')
+        new_element = "arguments[0].src = '" + img_url + "'"
+        driver.execute_script(new_element, img_element)
+    else:
+        current_size = driver.find_element_by_class_name('uiScaledImageContainer')
+        size = current_size.get_attribute('style')
+        width = int(size.split('width:')[1].split('px;')[0].strip())
+        height = int(size.split('height:')[1].split('px;')[0].strip())
+        ratio = width / height
+        #get the ratio of the new image
+        r = requests.get(img_url, stream = True)
+        local_file = open('local_image.jpg', 'wb')
+        r.raw.decode_content = True
+        shutil.copyfileobj(r.raw, local_file)
+        img = Image.open('local_image.jpg')
+        if video == True:
+            img_url = add_video_image('local_image.jpg')
+        new_height =  width * (img.height / img.width)
+        new_ratio = 'width: ' + str(width) + 'px;' + ' height: ' + str(int(round(new_height,0))) + 'px;'
+        new_element = "arguments[0].style = '" + new_ratio + "'"
+        driver.execute_script(new_element, current_size)
+        img_element = driver.find_element_by_class_name('scaledImageFitWidth')
+        new_element = "arguments[0].src = '" + img_url + "'"
+        driver.execute_script(new_element, img_element)
 
 
 def replace_carousel_img(img_url,driver, item ,video = False):
@@ -135,9 +143,20 @@ def screenshot_element(element_id, out_name, driver):
     im = im.crop((int(x), int(y), int(width) * 2, int(height) * 2))
     im.save(out_name)
 
+def none_check(element):
+    if element is None:
+        return('')
+    else:
+        element = element.replace("'",' ').replace('\n',' ')
+        return(element)
 
 def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, creation_time, screenshot_element_id = '' ,screenshot_out = '', video = False, sleep = 2, sponsored = False):
     driver.get(preview_url)
+    #first remove the img
+    replace_main_img("",driver, video)
+    #do the none checks
+    copy = none_check(copy)
+
     #page_name
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div/div[2]/div/div/div[2]/h5/span/span/a', page_name, driver)
     #copy
@@ -164,6 +183,13 @@ def linked_ad_template(copy, new_img, logo, page_name,engagement, driver, creati
 
 def full_linked_ad_template(copy, new_img, logo, page_name, cta, title, subtitle , driver, screenshot_element_id = '' , screenshot_out = '', video = False, sleep = 2):
     driver.get(link_ad_preview_url)
+    #remove the img first
+    replace_main_img("",driver, video)
+    #none checks
+    copy = none_check(copy)
+    title = none_check(title)
+    subtitle = none_check(subtitle)
+    cta = none_check(cta)
     #replace the CTA
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/div[1]/span/div[2]/div/div/div[3]/div/div/a', cta, driver)
     #replace the tile
@@ -194,6 +220,15 @@ def full_linked_ad_template(copy, new_img, logo, page_name, cta, title, subtitle
 
 def carousel_template(copy, new_img1, new_img2, logo, page_name, cta, title1, title2, subtitle1, subtitle2 , driver, screenshot_element_id = '' , screenshot_out = '', video = False, sleep = 2):
     driver.get(carousel_preview)
+    #remove the existing img
+    replace_carousel_img("", driver, 0)
+    replace_carousel_img("", driver, 1)
+    copy = none_check(copy)
+    title1 = none_check(title1)
+    title2 = none_check(title2)
+    subtitle1 = none_check(subtitle1)
+    subtitle2 = none_check(subtitle2)
+    cta = none_check(cta)
     #replace the CTA
     replace_innerHTML('/html/body/div[1]/div/div/div/div/div/div[2]/div[1]/div[2]/div[3]/div/div/div/div/ul/li[1]/div/div/div/div/div[1]/a[2]', cta, driver)
     #replace the titles

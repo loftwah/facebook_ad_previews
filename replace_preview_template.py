@@ -30,7 +30,7 @@ img2 = 'https://www.volkswagen.nl/-/media/vwpkw/images/elektrisch-rijden/elektri
 creation_time = post['created_time']
 
 preview.linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto', str(150) + ' Engagements', driver,creation_time ,'_5pcb', 'local_image.png', video = True)
-preview.linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto', 150, driver ,'_5pcb', 'local_image.png', video = True)
+#preview.linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto', 150, driver ,'_5pcb', 'local_image.png', video = True)
 preview.full_linked_ad_template('Dit is een random post', img_url, logo_url, 'Opel Auto','Learn More', 'I am a cool link', 'This is an even cooler subtitle' ,driver ,'_5pcb', 'local_image.png', video = False)
 preview.carousel_template(copy = 'Dit is een nieuwe post', new_img1 = img1, new_img2 = img2, logo = logo_url, page_name = 'Opel Auto', cta = 'Kopen', title1 = 'Volkswagen Elktrisch', title2 = 'Deze met Benzine', subtitle1 = 'Veel PK', subtitle2 = 'Nog meer PK nu', driver = driver,screenshot_element_id = '_5pcb' , screenshot_out = 'local_image.png', video = False, sleep = 2)
 
